@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Sender</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+    <div class="bg-white p-8 rounded-lg shadow-md w-96">
+        <h1 class="text-2xl font-bold mb-6 text-center">Send Email</h1>
+        <form id="emailForm" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700">To:</label>
+                <input type="email" id="to" required 
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Subject:</label>
+                <input type="text" id="subject" required 
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Message:</label>
+                <textarea id="message" required rows="4" 
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
+            </div>
+            <button type="submit" 
+                class="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                Send Email
+            </button>
+        </form>
+        <div id="status" class="mt-4 text-center hidden"></div>
+    </div>
+
+    <script>
+        document.getElementById('emailForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = 'mt-4 text-center';
+            statusDiv.textContent = 'Sending...';
+            statusDiv.classList.remove('hidden');
+
+            try {
+                const response = await fetch('/send-email', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        to: document.getElementById('to').value,
+                        subject: document.getElementById('subject').value,
+                        message: document.getElementById('message').value,
+                    }),
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    statusDiv.className = 'mt-4 text-center text-green-600';
+                    statusDiv.textContent = data.message;
+                    document.getElementById('emailForm').reset();
+                } else {
+                    statusDiv.className = 'mt-4 text-center text-red-600';
+                    statusDiv.textContent = data.message;
+                }
+            } catch (error) {
+                statusDiv.className = 'mt-4 text-center text-red-600';
+                statusDiv.textContent = 'An error occurred while sending the email';
+            }
+        });
+    </script>
+</body>
+</html>
